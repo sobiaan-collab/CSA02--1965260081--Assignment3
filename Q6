@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAXN 500
+#define LEN 30
+
+long long cmp_count, char_copies;
+
+void read_names(char names[][LEN], int n)
+{
+    for (int i = 0; i < n; i++) {
+        if (!fgets(names[i], LEN, stdin))
+            names[i][0] = '\0';
+
+        names[i][strcspn(names[i], "\n")] = '\0';
+    }
+}
+
+void sort_names(char names[][LEN], int n)
+{
+    char temp[LEN];
+
+    cmp_count = char_copies = 0;
+
+    for (int i = 1; i < n; i++) {
+        strcpy(temp, names[i]);
+        char_copies += strlen(temp) + 1;
+
+        int j = i - 1;
+
+        while (j >= 0) {
+            cmp_count++;
+
+            if (strcmp(names[j], temp) > 0) {
+                strcpy(names[j + 1], names[j]);
+                char_copies += strlen(names[j]) + 1;
+                j--;
+            }
+            else
+                break;
+        }
+
+        strcpy(names[j + 1], temp);
+        char_copies += strlen(temp) + 1;
+    }
+}
+
+int binary_search(char names[][LEN], int n,
+                  const char key[])
+{
+    int low = 0, high = n - 1;
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+
+        int c = strcmp(names[mid], key);
+
+        if (c == 0)
+            return mid;
+
+        if (c < 0)
+            low = mid + 1;
+        else
+            high = mid - 1;
+    }
+
+    return -1;
+}
+
+int main(void)
+{
+    int n;
+    char names[MAXN][LEN], key[LEN];
+
+    printf("Number of names (1-%d): ", MAXN);
+
+    if (scanf("%d", &n) != 1 || n < 1 || n > MAXN)
+        return 1;
+
+    getchar();
+
+    printf("Enter %d names, one per line:\n", n);
+
+    read_names(names, n);
+    sort_names(names, n);
+
+    printf("Sorted names:\n");
+
+    for (int i = 0; i < n; i++)
+        puts(names[i]);
+
+    printf("strcmp calls=%lld, character copies=%lld\n",
+           cmp_count, char_copies);
+
+    for (int i = 1; i < n; i++) {
+        if (strcmp(names[i - 1], names[i]) == 0)
+            printf("Duplicate: %s\n", names[i]);
+    }
+
+    printf("Search name: ");
+
+    if (!fgets(key, sizeof key, stdin))
+        return 1;
+
+    key[strcspn(key, "\n")] = '\0';
+
+    int pos = binary_search(names, n, key);
+
+    if (pos >= 0)
+        printf("Found at sorted index %d\n", pos);
+    else
+        puts("Name not found");
+
+    return 0;
+}
