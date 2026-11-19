@@ -1,0 +1,102 @@
+#include <stdio.h>
+
+#define DISTRICTS 38
+#define MONTHS 12
+
+void row_totals(const double rain[DISTRICTS][MONTHS],
+                double total[])
+{
+    for (int i = 0; i < DISTRICTS; i++) {
+        total[i] = 0;
+
+        for (int j = 0; j < MONTHS; j++)
+            total[i] += rain[i][j];
+    }
+}
+
+void monthly_averages(const double rain[DISTRICTS][MONTHS],
+                      double avg[])
+{
+    for (int j = 0; j < MONTHS; j++) {
+        double sum = 0;
+
+        for (int i = 0; i < DISTRICTS; i++)
+            sum += rain[i][j];
+
+        avg[j] = sum / DISTRICTS;
+    }
+}
+
+void maximum_rain(const double rain[DISTRICTS][MONTHS],
+                  int *district, int *month, double *maximum)
+{
+    *maximum = rain[0][0];
+    *district = 0;
+    *month = 0;
+
+    for (int i = 0; i < DISTRICTS; i++) {
+        for (int j = 0; j < MONTHS; j++) {
+            if (rain[i][j] > *maximum) {
+                *maximum = rain[i][j];
+                *district = i;
+                *month = j;
+            }
+        }
+    }
+}
+
+void deficient_districts(const double total[], double state_avg)
+{
+    for (int i = 0; i < DISTRICTS; i++) {
+        if (total[i] < 0.60 * state_avg)
+            printf("District %d is below 60%% of state average\n",
+                   i + 1);
+    }
+}
+
+int main(void)
+{
+    static double rain[DISTRICTS][MONTHS];
+
+    double total[DISTRICTS], avg[MONTHS];
+    double grand = 0, max;
+
+    int di, mo;
+
+    printf("Enter rainfall for 38 districts x 12 months:\n");
+
+    for (int i = 0; i < DISTRICTS; i++) {
+        for (int j = 0; j < MONTHS; j++) {
+            if (scanf("%lf", &rain[i][j]) != 1) {
+                fprintf(stderr, "Invalid input\n");
+                return 1;
+            }
+        }
+    }
+
+    row_totals(rain, total);
+    monthly_averages(rain, avg);
+    maximum_rain(rain, &di, &mo, &max);
+
+    for (int i = 0; i < DISTRICTS; i++) {
+        grand += total[i];
+
+        printf("District %d annual total = %.2f\n",
+               i + 1, total[i]);
+    }
+
+    printf("State monthly average rainfall (12 months):\n");
+
+    for (int j = 0; j < MONTHS; j++)
+        printf("Month %d = %.2f\n", j + 1, avg[j]);
+
+    printf("Wettest: district %d, month %d, rainfall %.2f\n",
+           di + 1, mo + 1, max);
+
+    printf("State average annual rainfall per district = %.2f\n",
+           grand / DISTRICTS);
+
+    deficient_districts(total, grand / DISTRICTS);
+
+    return 0;
+}
