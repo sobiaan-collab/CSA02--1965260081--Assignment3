@@ -1,0 +1,115 @@
+#include <stdio.h>
+
+#define MAX_CANDIDATES 12
+#define MAX_VOTES 5000
+
+typedef struct {
+    int id;
+    int votes;
+} Result;
+
+int main(void)
+{
+    int c, v, vote;
+
+    int count[MAX_CANDIDATES + 1] = {0};
+    Result result[MAX_CANDIDATES];
+
+    int valid = 0, invalid = 0;
+
+    printf("Number of candidates (1-%d): ",
+           MAX_CANDIDATES);
+
+    if (scanf("%d", &c) != 1 ||
+        c < 1 || c > MAX_CANDIDATES) {
+        puts("Invalid candidate count");
+        return 1;
+    }
+
+    printf("Number of votes (0-%d): ", MAX_VOTES);
+
+    if (scanf("%d", &v) != 1 ||
+        v < 0 || v > MAX_VOTES) {
+        puts("Invalid vote count");
+        return 1;
+    }
+
+    printf("Enter candidate number for each vote:\n");
+
+    for (int i = 0; i < v; i++) {
+        if (scanf("%d", &vote) != 1) {
+            puts("Invalid input");
+            return 1;
+        }
+
+        if (vote >= 1 && vote <= c) {
+            count[vote]++;
+            valid++;
+        }
+        else {
+            invalid++;
+        }
+    }
+
+    for (int i = 0; i < c; i++) {
+        result[i].id = i + 1;
+        result[i].votes = count[i + 1];
+    }
+
+    /* Selection sort */
+
+    for (int i = 0; i < c - 1; i++) {
+        int best = i;
+
+        for (int j = i + 1; j < c; j++) {
+            if (result[j].votes > result[best].votes ||
+               (result[j].votes == result[best].votes &&
+                result[j].id < result[best].id)) {
+                best = j;
+            }
+        }
+
+        if (best != i) {
+            Result temp = result[i];
+            result[i] = result[best];
+            result[best] = temp;
+        }
+    }
+
+    printf("Valid votes: %d\nInvalid votes: %d\n",
+           valid, invalid);
+
+    puts("Candidate totals (descending):");
+
+    for (int i = 0; i < c; i++)
+        printf("Candidate %d: %d\n",
+               result[i].id, result[i].votes);
+
+    if (result[0].votes == 0) {
+        puts("No valid votes; no winner.");
+    }
+    else {
+        int tied = 0;
+
+        for (int i = 1; i < c; i++) {
+            if (result[i].votes == result[0].votes)
+                tied++;
+        }
+
+        if (tied) {
+            printf("Tie between");
+
+            for (int i = 0; i < c; i++) {
+                if (result[i].votes == result[0].votes)
+                    printf(" Candidate %d", result[i].id);
+            }
+
+            puts("");
+        }
+        else {
+            printf("Winner: Candidate %d\n", result[0].id);
+        }
+    }
+
+    return 0;
+}
